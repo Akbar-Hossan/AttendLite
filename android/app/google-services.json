@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "535869090620",
+    "project_id": "attendlite-97e52",
+    "storage_bucket": "attendlite-97e52.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:535869090620:android:a8cdcc6b120818b5e5cc39",
+        "android_client_info": {
+          "package_name": "com.example.attend_lite"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBx8fPZAdIiKGg88xaXGbgcSkMB-g7fglY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
