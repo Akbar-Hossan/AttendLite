@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/attendance.dart';
+import 'login.dart';
 
 class HomeScreen extends StatelessWidget {
   HomeScreen({super.key});
@@ -15,20 +16,28 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => Login()),
+              );
+            },
+          ),
+        ],
         title: const Text('AttendLite'),
         centerTitle: true,
       ),
       body: Padding(
         padding: const EdgeInsets.all(20),
-        child: Column( 
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               'Today: ${DateTime.now().day}/${DateTime.now().month}/${DateTime.now().year}',
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
 
             const SizedBox(height: 20),
@@ -49,10 +58,7 @@ class HomeScreen extends StatelessWidget {
 
             const Text(
               'Recent Attendance',
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
 
             const SizedBox(height: 10),

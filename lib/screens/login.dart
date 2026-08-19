@@ -1,5 +1,5 @@
+import 'package:attend_lite/screens/teacher_home.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'home.dart';
@@ -47,7 +47,7 @@ class _LoginState extends State<Login> {
           context,
           MaterialPageRoute(
             builder: (context) =>
-                userRole == "student" ? HomeScreen() : HomeScreen(),
+                userRole == "student" ? TeacherHome() : TeacherHome(),
           ), // for now homescreen
         );
       } else {
@@ -197,20 +197,23 @@ class _LoginState extends State<Login> {
         padding: const EdgeInsets.symmetric(vertical: 14),
       ),
       onPressed: () {
+        if (isLoading) return;
         if (_formkey.currentState!.validate()) {
           print(emailController.text);
           print(passwordController.text);
           loginUser();
         }
       },
-      child: Text(
-        isLogin ? "Log In" : "Register",
-        style: TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-          letterSpacing: 1,
-        ),
-      ),
+      child: isLoading
+          ? const CircularProgressIndicator()
+          : Text(
+              isLogin ? "Log In" : "Register",
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1,
+              ),
+            ),
     );
   }
 

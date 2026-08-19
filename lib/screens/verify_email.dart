@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-
-import 'home.dart';
+import 'login.dart';
+import 'teacher_home.dart';
 
 class VerifyEmail extends StatelessWidget {
   const VerifyEmail({super.key});
@@ -9,6 +9,17 @@ class VerifyEmail extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          icon: Icon(Icons.logout),
+          onPressed: () {
+            Navigator.pushReplacement(
+              context,
+               MaterialPageRoute(builder: (context)=>Login()),
+              );
+          },
+        ),
+      ),
       body: Container(
         width: double.infinity,
         height: double.infinity,
@@ -32,11 +43,15 @@ class VerifyEmail extends StatelessWidget {
                 if (user != null && user.emailVerified) {
                   Navigator.pushReplacement(
                     context,
-                    MaterialPageRoute(builder: (context) => HomeScreen()),
+                    MaterialPageRoute(builder: (context) => TeacherHome()),
                   );
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Email is not verified yet')),
+                    const SnackBar(
+                      content: Text(
+                        'Email is not verified yet.(Check spam box)',
+                      ),
+                    ),
                   );
                 }
               },
