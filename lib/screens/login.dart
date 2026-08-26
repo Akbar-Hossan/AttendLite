@@ -2,8 +2,9 @@ import 'package:attend_lite/screens/teacher_home.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'home.dart';
 import 'verify_email.dart';
+import 'student_home.dart';
+import '../data/departments.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -17,15 +18,19 @@ class _LoginState extends State<Login> {
   String selectedRole = "student";
   bool isLogin = true;
   bool isLoading = false;
+  String? selectedDepartment = departments.first;
   // controllers
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController nameController = TextEditingController();
+  final TextEditingController rollController = TextEditingController();
 
   Future<void> loginUser() async {
     final email = emailController.text.trim();
     final password = passwordController.text;
     final name = nameController.text.trim();
+    final roll = rollController.text.trim();
+    final dept = selectedDepartment;
 
     setState(() => isLoading = true);
 
@@ -47,7 +52,7 @@ class _LoginState extends State<Login> {
           context,
           MaterialPageRoute(
             builder: (context) =>
-                userRole == "student" ? TeacherHome() : TeacherHome(),
+                userRole == "student" ? StudentHome() : TeacherHome(),
           ), // for now homescreen
         );
       } else {
@@ -64,12 +69,16 @@ class _LoginState extends State<Login> {
               'name': name,
               'email': email,
               'role': selectedRole,
+              'roll': selectedRole == 'student' ? roll : null,
+              'dept': dept,
               'createAt': FieldValue.serverTimestamp(),
             });
 
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => VerifyEmail()),
+          MaterialPageRoute(
+            builder: (context) => VerifyEmail(role: selectedRole),
+          ),
         );
       }
     } on FirebaseAuthException catch (e) {
@@ -145,9 +154,9 @@ class _LoginState extends State<Login> {
               },
               decoration: const InputDecoration(labelText: 'Full Name'),
             ),
-            const SizedBox(height: 16),
             DropdownButtonFormField<String>(
               value: selectedRole,
+
               items: const [
                 DropdownMenuItem(value: 'student', child: Text('Student')),
                 DropdownMenuItem(value: 'teacher', child: Text('Teacher')),
@@ -155,37 +164,80 @@ class _LoginState extends State<Login> {
               onChanged: (value) => setState(() => selectedRole = value!),
               decoration: const InputDecoration(
                 labelText: 'I am a',
-                labelStyle: TextStyle(fontSize: 28),
+                labelStyle: TextStyle(
+                  fontSize: 28,
+                  color: const Color.fromARGB(255, 11, 23, 29),
+                ),
               ),
             ),
-            const SizedBox(height: 12),
+
+            if (selectedRole == 'student') ...[
+              TextFormField(
+                controller: rollController,
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Please enter your roll number';
+                  }
+                  return null;
+                },
+                decoration: const InputDecoration(labelText: 'Roll Number'),
+              ),
+            ],
+            DropdownButtonFormField<String>(
+              value: selectedDepartment,
+              isExpanded: true,
+              items: departments.map((dept) {
+                return DropdownMenuItem<String>(
+                  value: dept,
+                  child: Text(dept, overflow: TextOverflow.ellipsis),
+                );
+              }).toList(),
+              onChanged: (value) {
+                setState(() {
+                  selectedDepartment = value;
+                });
+              },
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please select a department';
+                }
+                return null;
+              },
+              decoration: const InputDecoration(labelText: 'Department'),
+            ),
           ],
+
           _emailTextForm(),
-          // SizedBox(height: 16,),
+
           _passwordTextForm(),
 
           _logInbutton(),
-          TextButton(
-            onPressed: () {
-              emailController.clear();
-              passwordController.clear();
 
-              setState(() {
-                isLogin = !isLogin;
-              });
-            },
-            child: Text(
-              isLogin
-                  ? "Don't have an account? Register"
-                  : 'Already registered? Login',
-
-              style: TextStyle(
-                fontSize: 20,
-                color: const Color.fromARGB(255, 22, 8, 32),
-              ),
-            ),
-          ),
+          _loginSwitchButton(),
         ],
+      ),
+    );
+  }
+
+  TextButton _loginSwitchButton() {
+    return TextButton(
+      onPressed: () {
+        emailController.clear();
+        passwordController.clear();
+
+        setState(() {
+          isLogin = !isLogin;
+        });
+      },
+      child: Text(
+        isLogin
+            ? "Don't have an account? Register"
+            : 'Already registered? Login',
+
+        style: TextStyle(
+          fontSize: 20,
+          color: const Color.fromARGB(255, 22, 8, 32),
+        ),
       ),
     );
   }

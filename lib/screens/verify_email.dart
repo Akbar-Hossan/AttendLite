@@ -1,11 +1,20 @@
+import 'package:attend_lite/screens/student_home.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'login.dart';
 import 'teacher_home.dart';
 
-class VerifyEmail extends StatelessWidget {
-  const VerifyEmail({super.key});
+class VerifyEmail extends StatefulWidget {
+  final String role;
+  const VerifyEmail({
+    super.key,
+    required this.role,
+    });
+  @override
+  State<VerifyEmail> createState() => _VerifyEmailState();
+}
 
+class _VerifyEmailState extends State<VerifyEmail> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -15,8 +24,8 @@ class VerifyEmail extends StatelessWidget {
           onPressed: () {
             Navigator.pushReplacement(
               context,
-               MaterialPageRoute(builder: (context)=>Login()),
-              );
+              MaterialPageRoute(builder: (context) => Login()),
+            );
           },
         ),
       ),
@@ -43,7 +52,13 @@ class VerifyEmail extends StatelessWidget {
                 if (user != null && user.emailVerified) {
                   Navigator.pushReplacement(
                     context,
-                    MaterialPageRoute(builder: (context) => TeacherHome()),
+                    MaterialPageRoute(builder: (context) {
+                      if(widget.role == 'teacher') {
+                        return TeacherHome();
+                      } else {
+                        return StudentHome();
+                      }
+                    }),
                   );
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(

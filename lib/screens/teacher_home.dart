@@ -1,8 +1,9 @@
+import 'package:attend_lite/screens/session_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'login.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../data/departments.dart';
 
 class TeacherHome extends StatefulWidget {
   const TeacherHome({super.key});
@@ -12,9 +13,12 @@ class TeacherHome extends StatefulWidget {
 }
 
 class _TeacherHomeState extends State<TeacherHome> {
-  List<String> subjects = [];
+  List<Map<String, String>> subjects = [];
+
   bool isAdding = false;
   bool isLoading = true;
+
+  String selectedDepartment = departments.first;
 
   @override
   void initState() {
@@ -31,8 +35,15 @@ class _TeacherHomeState extends State<TeacherHome> {
           .collection('subjects')
           .where('teacherId', isEqualTo: teacherId)
           .get();
+
+      subjects.clear();
+
       for (var doc in snapshot.docs) {
-        subjects.add(doc['name']);
+        subjects.add({
+          'id': doc.id,
+          'name': doc['name'].toString(),
+          'department': doc['department'].toString(),
+        });
       }
     } finally {
       if (mounted) {
@@ -41,7 +52,6 @@ class _TeacherHomeState extends State<TeacherHome> {
         });
       }
     }
-    setState(() {});
   }
 
   final TextEditingController subjectNameController = TextEditingController();
@@ -63,7 +73,7 @@ class _TeacherHomeState extends State<TeacherHome> {
                 padding: const EdgeInsets.symmetric(vertical: 5),
                 child: ListView(
                   children: [
-                    for (String subject in subjects)
+                    for (var subject in subjects)
                       Padding(
                         padding: const EdgeInsets.all(10),
                         child: Container(
@@ -79,7 +89,19 @@ class _TeacherHomeState extends State<TeacherHome> {
                               ),
                             ],
                           ),
-                          child: ListTile(title: Text(subject)),
+                          child: ListTile(
+                            title: Text(subject['name']!),
+                            subtitle: Text(subject['department']!),
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      SessionPage(subjectId: subject['id']!),
+                                ),
+                              );
+                            },
+                          ),
                         ),
                       ),
                   ],
@@ -95,20 +117,14 @@ class _TeacherHomeState extends State<TeacherHome> {
                 builder: (context, setDialogState) {
                   return AlertDialog(
                     title: Text('Add Subject'),
-                    content: TextFormField(
-                      controller: subjectNameController,
-                      decoration: InputDecoration(
-                        labelText: 'Subject name:',
-                        labelStyle: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w400,
-                        ),
-                        hintText: 'Bangla',
-                        hintStyle: TextStyle(
-                          fontSize: 13,
-                          color: Color.fromARGB(143, 69, 52, 146),
-                        ),
-                      ),
+                    content: Column(
+                      children: [
+                        _subjectName(),
+
+                        const SizedBox(height: 10),
+
+                        _departmentSelection(setDialogState),
+                      ],
                     ),
                     actions: [
                       Row(
@@ -135,12 +151,17 @@ class _TeacherHomeState extends State<TeacherHome> {
                               });
 
                               try {
-                                await FirebaseFirestore.instance
-                                    .collection('subjects')
-                                    .add({'name': sub, 'teacherId': teacherid});
+                                DocumentReference docRef =
+                                    await FirebaseFirestore.instance
+                                        .collection('subjects')
+                                        .add({
+                                          'name': sub,
+                                          'teacherId': teacherid,
+                                          'department': selectedDepartment,
+                                        });
 
                                 setDialogState(() {
-                                  subjects.add(sub);
+                                  subjects.add({'id': docRef.id, 'name': sub, 'department': selectedDepartment});
                                 });
 
                                 subjectNameController.clear();
@@ -154,7 +175,13 @@ class _TeacherHomeState extends State<TeacherHome> {
                               }
                             },
                             child: isAdding
-                                ? const CircularProgressIndicator()
+                                ? SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  )
+                                  )
                                 : Text("Add"),
                           ),
                         ],
@@ -169,6 +196,48 @@ class _TeacherHomeState extends State<TeacherHome> {
         child: Icon(Icons.add),
       ),
     );
+  }
+
+  TextFormField _subjectName() {
+    return TextFormField(
+                        controller: subjectNameController,
+                        decoration: InputDecoration(
+                          labelText: 'Subject name:',
+                          labelStyle: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w400,
+                          ),
+                          hintText: 'Bangla',
+                          hintStyle: TextStyle(
+                            fontSize: 13,
+                            color: Color.fromARGB(143, 69, 52, 146),
+                          ),
+                        ),
+                      );
+  }
+
+  DropdownButtonFormField<String> _departmentSelection(StateSetter setDialogState) {
+    return DropdownButtonFormField<String>(
+                        value: selectedDepartment,
+                        isExpanded: true,
+                        items: departments.map((dept) {
+                          return DropdownMenuItem<String>(
+                            value: dept,
+                            child: Text(
+                              dept,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setDialogState(() {
+                            selectedDepartment = value!;
+                          });
+                        },
+                        decoration: const InputDecoration(
+                          labelText: 'Department',
+                        ),
+                      );
   }
 
   // This the AppBar
