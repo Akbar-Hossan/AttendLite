@@ -95,6 +95,7 @@ class _LoginState extends State<Login> {
     nameController.dispose();
     emailController.dispose();
     passwordController.dispose();
+    rollController.dispose();
     super.dispose();
   }
 

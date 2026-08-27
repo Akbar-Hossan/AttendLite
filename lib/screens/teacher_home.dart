@@ -14,6 +14,7 @@ class TeacherHome extends StatefulWidget {
 
 class _TeacherHomeState extends State<TeacherHome> {
   List<Map<String, String>> subjects = [];
+  Set<String> registeredSubjects = {};
 
   bool isAdding = false;
   bool isLoading = true;
@@ -161,7 +162,11 @@ class _TeacherHomeState extends State<TeacherHome> {
                                         });
 
                                 setDialogState(() {
-                                  subjects.add({'id': docRef.id, 'name': sub, 'department': selectedDepartment});
+                                  subjects.add({
+                                    'id': docRef.id,
+                                    'name': sub,
+                                    'department': selectedDepartment,
+                                  });
                                 });
 
                                 subjectNameController.clear();
@@ -176,11 +181,11 @@ class _TeacherHomeState extends State<TeacherHome> {
                             },
                             child: isAdding
                                 ? SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                  )
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
                                   )
                                 : Text("Add"),
                           ),
@@ -200,44 +205,38 @@ class _TeacherHomeState extends State<TeacherHome> {
 
   TextFormField _subjectName() {
     return TextFormField(
-                        controller: subjectNameController,
-                        decoration: InputDecoration(
-                          labelText: 'Subject name:',
-                          labelStyle: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w400,
-                          ),
-                          hintText: 'Bangla',
-                          hintStyle: TextStyle(
-                            fontSize: 13,
-                            color: Color.fromARGB(143, 69, 52, 146),
-                          ),
-                        ),
-                      );
+      controller: subjectNameController,
+      decoration: InputDecoration(
+        labelText: 'Subject name:',
+        labelStyle: TextStyle(fontSize: 20, fontWeight: FontWeight.w400),
+        hintText: 'Bangla',
+        hintStyle: TextStyle(
+          fontSize: 13,
+          color: Color.fromARGB(143, 69, 52, 146),
+        ),
+      ),
+    );
   }
 
-  DropdownButtonFormField<String> _departmentSelection(StateSetter setDialogState) {
+  DropdownButtonFormField<String> _departmentSelection(
+    StateSetter setDialogState,
+  ) {
     return DropdownButtonFormField<String>(
-                        value: selectedDepartment,
-                        isExpanded: true,
-                        items: departments.map((dept) {
-                          return DropdownMenuItem<String>(
-                            value: dept,
-                            child: Text(
-                              dept,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          );
-                        }).toList(),
-                        onChanged: (value) {
-                          setDialogState(() {
-                            selectedDepartment = value!;
-                          });
-                        },
-                        decoration: const InputDecoration(
-                          labelText: 'Department',
-                        ),
-                      );
+      value: selectedDepartment,
+      isExpanded: true,
+      items: departments.map((dept) {
+        return DropdownMenuItem<String>(
+          value: dept,
+          child: Text(dept, overflow: TextOverflow.ellipsis),
+        );
+      }).toList(),
+      onChanged: (value) {
+        setDialogState(() {
+          selectedDepartment = value!;
+        });
+      },
+      decoration: const InputDecoration(labelText: 'Department'),
+    );
   }
 
   // This the AppBar
