@@ -220,16 +220,7 @@ class _StudentHomeState extends State<StudentHome> {
         ],
       ),
     );
-  }Future<void> loadRegistrations() async {
-    var querySnapshot = FirebaseFirestore.instance
-        .collection('registrations')
-        .where('studentId', isEqualTo: uid)
-        .get();
-
-        for( var sub in querySnapshot.){
-          registeredSubjects.add(sub['id']);
-        }
-
+  }
 
   AppBar _appBar(BuildContext context) {
     return AppBar(
