@@ -37,7 +37,7 @@ class _VerifyEmailState extends State<VerifyEmail> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Text(
-              'Please verify your email address',
+              'Please verify your email address!(Check spam box)',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
@@ -64,7 +64,7 @@ class _VerifyEmailState extends State<VerifyEmail> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text(
-                        'Email is not verified yet.(Check spam box)',
+                        'Email is not verified yet.',
                       ),
                     ),
                   );

@@ -1,3 +1,4 @@
+import 'package:attend_lite/screens/teacher_attendance.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -113,23 +114,36 @@ class _SessionPageState extends State<SessionPage> {
                           await loadSessions();
 
                           final sessionId = sessionRef.id;
-                          // for later : open attendance app with sessionId
-                        } finally {
-                          setState(() {
+
+                          if (!context.mounted) return;
+
+                          setDialogState(() {
+                            isAdding = false;
+                          });
+
+                          Navigator.pop(context);
+
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => TeacherAttendance(
+                                sessionId: sessionId,
+                                subjectId: widget.subjectId,
+                              ),
+                            ),
+                          );
+                        } catch (e) {
+                          setDialogState(() {
                             isAdding = false;
                           });
                         }
-
-                        Navigator.pop(context);
                       },
                       child: isAdding
                           ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                            ),
-                          )
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
                           : const Text('Start'),
                     ),
                   ],
