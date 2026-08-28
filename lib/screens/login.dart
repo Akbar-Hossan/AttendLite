@@ -328,7 +328,7 @@ class _LoginState extends State<Login> {
     return AppBar(
       centerTitle: true,
       backgroundColor: const Color.fromARGB(189, 128, 39, 136),
-      toolbarHeight: 100,
+      toolbarHeight: 50,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
       ),

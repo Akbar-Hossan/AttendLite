@@ -15,6 +15,7 @@ class _StudentHomeState extends State<StudentHome> {
   String studentDept = '';
   List<Map<String, dynamic>> subjects = [];
   Set<String> registeredSubjects = {};
+  bool isLoading = true;
 
   String uid = FirebaseAuth.instance.currentUser!.uid;
 
@@ -43,7 +44,9 @@ class _StudentHomeState extends State<StudentHome> {
     await loadRegistrations();
 
     if (mounted) {
-      setState(() {});
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
@@ -71,8 +74,6 @@ class _StudentHomeState extends State<StudentHome> {
         'teacherDept': teacher['dept'],
       });
     }
-    print('Number of Subjects: ${subjects.length}');
-    print('Subjects: $subjects');
   }
 
   // Register in a Subject
@@ -151,83 +152,88 @@ class _StudentHomeState extends State<StudentHome> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: _appBar(context),
-      body: ListView(
-        children: [
-          for (var subject in subjects)
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Container(
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey),
-                  borderRadius: BorderRadius.circular(8.0),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color.fromARGB(31, 69, 52, 146),
-                      blurRadius: 2,
-                      spreadRadius: 1,
-                      offset: Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    ListTile(
-                      title: Text(subject['name'].toString()),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+      body: isLoading
+          ? Center(child: CircularProgressIndicator())
+          : ListView(
+              children: [
+                for (var subject in subjects)
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey),
+                        borderRadius: BorderRadius.circular(8.0),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color.fromARGB(31, 69, 52, 146),
+                            blurRadius: 2,
+                            spreadRadius: 1,
+                            offset: Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Column(
                         children: [
-                          Text('Teacher: ${subject['teacher']}'),
-                          Text('Department: ${subject['teacherDept']}'),
+                          ListTile(
+                            title: Text(subject['name'].toString()),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Teacher: ${subject['teacher']}'),
+                                Text('Department: ${subject['teacherDept']}'),
+                              ],
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                            child: SizedBox(
+                              width: double.infinity,
+                              child: registeredSubjects.contains(subject['id'])
+                                  ? ElevatedButton(
+                                      onPressed: () {
+                                        //Open attendance page
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                AttendanceSummary(
+                                                  subjectId: subject['id'],
+                                                ),
+                                          ),
+                                        );
+                                      },
+                                      child: Text('View'),
+                                    )
+                                  : ElevatedButton(
+                                      onPressed: () {
+                                        registerSubject(subject);
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 12,
+                                        ),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            10,
+                                          ),
+                                        ),
+                                      ),
+                                      child: const Text(
+                                        'Register',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                            ),
+                          ),
                         ],
                       ),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-                      child: SizedBox(
-                        width: double.infinity,
-                        child: registeredSubjects.contains(subject['id'])
-                            ? ElevatedButton(
-                                onPressed: () {
-                                  //Open attendance page
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => AttendanceSummary(
-                                        subjectId: subject['id'],
-                                      ),
-                                    ),
-                                  );
-                                },
-                                child: Text('View'),
-                              )
-                            : ElevatedButton(
-                                onPressed: () {
-                                  registerSubject(subject);
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 12,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                ),
-                                child: const Text(
-                                  'Register',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+                  ),
+              ],
             ),
-        ],
-      ),
     );
   }
 
@@ -243,7 +249,11 @@ class _StudentHomeState extends State<StudentHome> {
           SizedBox(height: 4),
           Text(
             studentDept,
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w300),
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w300,
+              color: Color.fromARGB(143, 69, 52, 146),
+            ),
           ),
         ],
       ),
@@ -261,6 +271,7 @@ class _StudentHomeState extends State<StudentHome> {
         ),
       ],
       titleTextStyle: const TextStyle(
+        color: Color.fromARGB(255, 179, 47, 179),
         fontSize: 20,
         fontWeight: FontWeight.bold,
       ),

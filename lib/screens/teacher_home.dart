@@ -256,6 +256,7 @@ class _TeacherHomeState extends State<TeacherHome> {
         ),
       ],
       titleTextStyle: const TextStyle(
+        color: Color.fromARGB(255, 179, 47, 179),
         fontSize: 20,
         fontWeight: FontWeight.bold,
       ),

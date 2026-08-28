@@ -18,6 +18,7 @@ class _TeacherAttendanceState extends State<TeacherAttendance> {
   List<Map<String, dynamic>> students = [];
   Map<String, bool> attendance = {};
   bool isSaving = false;
+  bool isLoading = true;
 
   @override
   void initState() {
@@ -54,7 +55,9 @@ class _TeacherAttendanceState extends State<TeacherAttendance> {
     });
 
     if (mounted) {
-      setState(() {});
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
@@ -106,70 +109,73 @@ class _TeacherAttendanceState extends State<TeacherAttendance> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: _appBar(),
-      body: ListView(
-        children: [
-          for (var student in students)
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Container(
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey),
-                  borderRadius: BorderRadius.circular(8.0),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color.fromARGB(31, 69, 52, 146),
-                      blurRadius: 2,
-                      spreadRadius: 1,
-                      offset: Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    ListTile(
-                      title: Text(student['name']),
-                      subtitle: Text('Roll: ${student['roll']}'),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          ElevatedButton(
-                            onPressed: () {
-                              setState(() {
-                                attendance[student['studentId']] = true;
-                              });
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor:
-                                  attendance[student['studentId']] == true
-                                  ? Colors.green
-                                  : null,
-                            ),
-                            child: const Text('Present'),
+      body: isLoading
+          ? Center(child: CircularProgressIndicator())
+          : ListView(
+              children: [
+                for (var student in students)
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey),
+                        borderRadius: BorderRadius.circular(8.0),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color.fromARGB(31, 69, 52, 146),
+                            blurRadius: 2,
+                            spreadRadius: 1,
+                            offset: Offset(0, 2),
                           ),
-                          const SizedBox(width: 8),
-                          ElevatedButton(
-                            onPressed: () {
-                              setState(() {
-                                attendance[student['studentId']] = false;
-                              });
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor:
-                                  attendance[student['studentId']] == false
-                                  ? Colors.red
-                                  : null,
+                        ],
+                      ),
+                      child: Column(
+                        children: [
+                          ListTile(
+                            title: Text(student['name']),
+                            subtitle: Text('Roll: ${student['roll']}'),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                ElevatedButton(
+                                  onPressed: () {
+                                    setState(() {
+                                      attendance[student['studentId']] = true;
+                                    });
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor:
+                                        attendance[student['studentId']] == true
+                                        ? Colors.green
+                                        : null,
+                                  ),
+                                  child: const Text('Present'),
+                                ),
+                                const SizedBox(width: 8),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    setState(() {
+                                      attendance[student['studentId']] = false;
+                                    });
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor:
+                                        attendance[student['studentId']] ==
+                                            false
+                                        ? Colors.red
+                                        : null,
+                                  ),
+                                  child: const Text('Absent'),
+                                ),
+                              ],
                             ),
-                            child: const Text('Absent'),
                           ),
                         ],
                       ),
                     ),
-                  ],
-                ),
-              ),
+                  ),
+              ],
             ),
-        ],
-      ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: isSaving ? null : saveAttendance,
         icon: isSaving
@@ -186,10 +192,10 @@ class _TeacherAttendanceState extends State<TeacherAttendance> {
 
   AppBar _appBar() {
     return AppBar(
-      title: const Text('Session Page'),
+      title: const Text('Attendance'),
       centerTitle: true,
       titleTextStyle: const TextStyle(
-        color: const Color.fromARGB(255, 179, 47, 179),
+        color: Color.fromARGB(255, 179, 47, 179),
         fontSize: 20,
         fontWeight: FontWeight.bold,
       ),

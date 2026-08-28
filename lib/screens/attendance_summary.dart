@@ -11,6 +11,7 @@ class AttendanceSummary extends StatefulWidget {
 }
 
 class _AttendanceSummaryState extends State<AttendanceSummary> {
+  bool isLoading = true;
   List<Map<String, dynamic>> sessions = [];
   String uid = FirebaseAuth.instance.currentUser!.uid;
 
@@ -52,7 +53,9 @@ class _AttendanceSummaryState extends State<AttendanceSummary> {
     }
 
     if (mounted) {
-      setState(() {});
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
@@ -69,126 +72,130 @@ class _AttendanceSummaryState extends State<AttendanceSummary> {
 
     return Scaffold(
       appBar: _appBar(),
-      body: ListView(
-        padding: const EdgeInsets.all(10),
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(vertical: 15),
-            child: Row(
+      body: isLoading
+          ? Center(child: CircularProgressIndicator())
+          : ListView(
+              padding: const EdgeInsets.all(10),
               children: [
-                Expanded(
-                  child: Column(
+                Container(
+                  padding: const EdgeInsets.symmetric(vertical: 15),
+                  child: Row(
                     children: [
-                      const Text(
-                        'Total Sessions',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w400,
+                      Expanded(
+                        child: Column(
+                          children: [
+                            const Text(
+                              'Total Sessions',
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                            Text(
+                              '$totalSessions',
+                              style: const TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      Text(
-                        '$totalSessions',
-                        style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
 
-                Expanded(
-                  child: Column(
-                    children: [
-                      const Text(
-                        'Present',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w400,
+                      Expanded(
+                        child: Column(
+                          children: [
+                            const Text(
+                              'Present',
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                            Text(
+                              '$present',
+                              style: const TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      Text(
-                        '$present',
-                        style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
 
-                Expanded(
-                  child: Column(
-                    children: [
-                      const Text(
-                        'Percentage',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w400,
-                        ),
-                      ),
-                      Text(
-                        '${percentage.toInt()}%',
-                        style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
+                      Expanded(
+                        child: Column(
+                          children: [
+                            const Text(
+                              'Percentage',
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                            Text(
+                              '${percentage.toInt()}%',
+                              style: const TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
                   ),
                 ),
+                for (var session in sessions)
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Container(
+                      padding: const EdgeInsets.all(15),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey),
+                        borderRadius: BorderRadius.circular(8.0),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color.fromARGB(31, 69, 52, 146),
+                            blurRadius: 2,
+                            spreadRadius: 1,
+                            offset: Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Date: ${formatDate(session['startedAt'])}',
+                            style: const TextStyle(fontSize: 16),
+                          ),
+
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: session['present']
+                                  ? Colors.green
+                                  : Colors.red,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              session['present'] ? 'Present' : 'Absent',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
               ],
             ),
-          ),
-          for (var session in sessions)
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Container(
-                padding: const EdgeInsets.all(15),
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey),
-                  borderRadius: BorderRadius.circular(8.0),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color.fromARGB(31, 69, 52, 146),
-                      blurRadius: 2,
-                      spreadRadius: 1,
-                      offset: Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Date: ${formatDate(session['startedAt'])}',
-                      style: const TextStyle(fontSize: 16),
-                    ),
-
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: session['present'] ? Colors.green : Colors.red,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        session['present'] ? 'Present' : 'Absent',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-        ],
-      ),
     );
   }
 }

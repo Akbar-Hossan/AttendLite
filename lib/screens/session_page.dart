@@ -15,6 +15,7 @@ class SessionPage extends StatefulWidget {
 }
 
 class _SessionPageState extends State<SessionPage> {
+  bool isLoading = true;
   List<Map<String, dynamic>> sessions = [];
   final teacherId = FirebaseAuth.instance.currentUser!.uid;
   bool isAdding = false;
@@ -37,7 +38,9 @@ class _SessionPageState extends State<SessionPage> {
       });
     }
     if (mounted) {
-      setState(() {});
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
@@ -56,31 +59,33 @@ class _SessionPageState extends State<SessionPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: _appBar(),
-      body: ListView(
-        children: [
-          for (int i = 0; i < sessions.length; i++)
-            ListTile(
-              leading: CircleAvatar(child: Text('${i + 1}')),
-              title: Text('Session ${i + 1}'),
-              subtitle: Text(
-                DateFormat(
-                  'dd MMMM yyyy • hh:mm a',
-                ).format((sessions[i]['startedAt'] as Timestamp).toDate()),
-              ),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => SessionSummary(
-                      sessionId: sessions[i]['id']!,
-                      subjectId: widget.subjectId,
+      body: isLoading
+          ? Center(child: CircularProgressIndicator())
+          : ListView(
+              children: [
+                for (int i = 0; i < sessions.length; i++)
+                  ListTile(
+                    leading: CircleAvatar(child: Text('${i + 1}')),
+                    title: Text('Session ${i + 1}'),
+                    subtitle: Text(
+                      DateFormat('dd MMMM yyyy • hh:mm a').format(
+                        (sessions[i]['startedAt'] as Timestamp).toDate(),
+                      ),
                     ),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => SessionSummary(
+                            sessionId: sessions[i]['id']!,
+                            subjectId: widget.subjectId,
+                          ),
+                        ),
+                      );
+                    },
                   ),
-                );
-              },
+              ],
             ),
-        ],
-      ),
       floatingActionButton: _addSessions(context),
     );
   }
@@ -171,7 +176,7 @@ class _SessionPageState extends State<SessionPage> {
 
   AppBar _appBar() {
     return AppBar(
-      title: Text('Session Page'),
+      title: Text('Sessions'),
       centerTitle: true,
       titleTextStyle: TextStyle(
         color: const Color.fromARGB(255, 179, 47, 179),
