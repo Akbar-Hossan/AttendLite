@@ -1,20 +1,18 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-class SessionSummary extends StatefulWidget {
-  final String sessionId;
+class AttendanceSummary extends StatefulWidget {
   final String subjectId;
-  const SessionSummary({
-    super.key,
-    required this.sessionId,
-    required this.subjectId,
-  });
+  const AttendanceSummary({super.key, required this.subjectId});
+
   @override
-  State<SessionSummary> createState() => _SessionSummaryState();
+  State<AttendanceSummary> createState() => _AttendanceSummaryState();
 }
 
-class _SessionSummaryState extends State<SessionSummary> {
-  List<Map<String, dynamic>> attendances = [];
+class _AttendanceSummaryState extends State<AttendanceSummary> {
+  List<Map<String, dynamic>> sessions = [];
+  String uid = FirebaseAuth.instance.currentUser!.uid;
 
   @override
   void initState() {
@@ -22,30 +20,36 @@ class _SessionSummaryState extends State<SessionSummary> {
     loadAttendance();
   }
 
+  String formatDate(Timestamp timestamp) {
+    DateTime date = timestamp.toDate();
+
+    return '${date.day}/${date.month}/${date.year}';
+  }
+
   Future<void> loadAttendance() async {
     QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-        .collection('attendance')
-        .where('sessionId', isEqualTo: widget.sessionId)
+        .collection('sessions')
+        .where('subjectId', isEqualTo: widget.subjectId)
         .get();
 
-    attendances.clear();
+    sessions.clear();
 
-    for (var attendance in querySnapshot.docs) {
-      String studentId = attendance['studentId'];
+    for (var doc in querySnapshot.docs) {
+      String attendanceId = '${doc.id}_$uid';
 
-      DocumentSnapshot student = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(studentId)
+      DocumentSnapshot attendance = await FirebaseFirestore.instance
+          .collection('attendance')
+          .doc(attendanceId)
           .get();
 
-      attendances.add({
-        'studentId': studentId,
-        'name': student['name'],
-        'roll': student['roll'],
-        'present': attendance['present'],
-      });
+      if (attendance.exists) {
+        sessions.add({
+          'id': doc.id,
+          'startedAt': doc['startedAt'],
+          'present': attendance['present'],
+        });
+      }
     }
-    attendances.sort((a, b) => a['roll'].compareTo(b['roll']));
 
     if (mounted) {
       setState(() {});
@@ -54,18 +58,19 @@ class _SessionSummaryState extends State<SessionSummary> {
 
   @override
   Widget build(BuildContext context) {
-    int totalStudents = attendances.length;
-    int presentStudents = attendances
+    int totalSessions = sessions.length;
+    int present = sessions
         .where((attendance) => attendance['present'] == true)
         .length;
 
-    double percentage = totalStudents == 0
+    double percentage = totalSessions == 0
         ? 0
-        : (presentStudents / totalStudents) * 100;
+        : (present / totalSessions) * 100;
 
     return Scaffold(
       appBar: _appBar(),
       body: ListView(
+        padding: const EdgeInsets.all(10),
         children: [
           Container(
             padding: const EdgeInsets.symmetric(vertical: 15),
@@ -75,14 +80,14 @@ class _SessionSummaryState extends State<SessionSummary> {
                   child: Column(
                     children: [
                       const Text(
-                        'Total Students',
+                        'Total Sessions',
                         style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w400,
                         ),
                       ),
                       Text(
-                        '$totalStudents',
+                        '$totalSessions',
                         style: const TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
@@ -96,14 +101,14 @@ class _SessionSummaryState extends State<SessionSummary> {
                   child: Column(
                     children: [
                       const Text(
-                        'Present Students',
+                        'Present',
                         style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w400,
                         ),
                       ),
                       Text(
-                        '$presentStudents',
+                        '$present',
                         style: const TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
@@ -136,10 +141,11 @@ class _SessionSummaryState extends State<SessionSummary> {
               ],
             ),
           ),
-          for (var attendance in attendances)
+          for (var session in sessions)
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Container(
+                padding: const EdgeInsets.all(15),
                 decoration: BoxDecoration(
                   border: Border.all(color: Colors.grey),
                   borderRadius: BorderRadius.circular(8.0),
@@ -152,23 +158,32 @@ class _SessionSummaryState extends State<SessionSummary> {
                     ),
                   ],
                 ),
-                child: ListTile(
-                  title: Text(attendance['name']),
-                  subtitle: Text(attendance['roll']),
-                  trailing: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Date: ${formatDate(session['startedAt'])}',
+                      style: const TextStyle(fontSize: 16),
                     ),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                      color: attendance['present'] ? Colors.green : Colors.red,
+
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: session['present'] ? Colors.green : Colors.red,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        session['present'] ? 'Present' : 'Absent',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
-                    child: Text(
-                      attendance['present'] ? 'Present' : 'Absent',
-                      style: TextStyle(fontSize: 14, color: Colors.white),
-                    ),
-                  ),
+                  ],
                 ),
               ),
             ),
@@ -176,16 +191,16 @@ class _SessionSummaryState extends State<SessionSummary> {
       ),
     );
   }
+}
 
-  AppBar _appBar() {
-    return AppBar(
-      title: Text('Session Summary'),
-      centerTitle: true,
-      titleTextStyle: TextStyle(
-        color: const Color.fromARGB(255, 179, 47, 179),
-        fontSize: 20,
-        fontWeight: FontWeight.bold,
-      ),
-    );
-  }
+AppBar _appBar() {
+  return AppBar(
+    title: Text('Attendance Summary'),
+    centerTitle: true,
+    titleTextStyle: TextStyle(
+      color: const Color.fromARGB(255, 179, 47, 179),
+      fontSize: 20,
+      fontWeight: FontWeight.bold,
+    ),
+  );
 }

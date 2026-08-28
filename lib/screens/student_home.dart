@@ -1,3 +1,4 @@
+import 'package:attend_lite/screens/attendance_summary.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -131,6 +132,7 @@ class _StudentHomeState extends State<StudentHome> {
       });
     }
   }
+
   // after login load the user registered subjects
   Future<void> loadRegistrations() async {
     var querySnapshot = await FirebaseFirestore.instance
@@ -138,12 +140,11 @@ class _StudentHomeState extends State<StudentHome> {
         .where('studentId', isEqualTo: uid)
         .get();
 
-        registeredSubjects.clear();
+    registeredSubjects.clear();
 
-        for( var sub in querySnapshot.docs){
-          registeredSubjects.add(sub['subjectId']);
-        }
-
+    for (var sub in querySnapshot.docs) {
+      registeredSubjects.add(sub['subjectId']);
+    }
   }
 
   @override
@@ -188,6 +189,14 @@ class _StudentHomeState extends State<StudentHome> {
                             ? ElevatedButton(
                                 onPressed: () {
                                   //Open attendance page
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => AttendanceSummary(
+                                        subjectId: subject['id'],
+                                      ),
+                                    ),
+                                  );
                                 },
                                 child: Text('View'),
                               )

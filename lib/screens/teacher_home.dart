@@ -171,8 +171,6 @@ class _TeacherHomeState extends State<TeacherHome> {
 
                                 subjectNameController.clear();
                                 Navigator.pop(context);
-                              } on Exception catch (e) {
-                                // later
                               } finally {
                                 setState(() {
                                   isAdding = false;
