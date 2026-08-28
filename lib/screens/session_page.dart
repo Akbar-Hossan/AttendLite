@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
+import 'session_summary.dart';
 
 class SessionPage extends StatefulWidget {
   final String subjectId;
@@ -66,6 +67,17 @@ class _SessionPageState extends State<SessionPage> {
                   'dd MMMM yyyy • hh:mm a',
                 ).format((sessions[i]['startedAt'] as Timestamp).toDate()),
               ),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => SessionSummary(
+                      sessionId: sessions[i]['id']!,
+                      subjectId: widget.subjectId,
+                    ),
+                  ),
+                );
+              },
             ),
         ],
       ),
