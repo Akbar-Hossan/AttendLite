@@ -15,6 +15,7 @@ class TeacherHome extends StatefulWidget {
 class _TeacherHomeState extends State<TeacherHome> {
   List<Map<String, String>> subjects = [];
   Set<String> registeredSubjects = {};
+  String name = '';
 
   bool isAdding = false;
   bool isLoading = true;
@@ -26,6 +27,17 @@ class _TeacherHomeState extends State<TeacherHome> {
     super.initState();
 
     loadSubjects();
+  }
+
+  Future<void> loadingName() async {
+    final String teacherId = FirebaseAuth.instance.currentUser!.uid;
+
+    DocumentSnapshot snapshot = await FirebaseFirestore.instance
+        .collection("users")
+        .doc(teacherId)
+        .get();
+
+    name = snapshot['name'];
   }
 
   Future<void> loadSubjects() async {
@@ -46,6 +58,7 @@ class _TeacherHomeState extends State<TeacherHome> {
           'department': doc['department'].toString(),
         });
       }
+      await loadingName();
     } finally {
       if (mounted) {
         setState(() {
@@ -240,7 +253,22 @@ class _TeacherHomeState extends State<TeacherHome> {
   // This the AppBar
   AppBar _appBar(BuildContext context) {
     return AppBar(
-      title: const Text('Teacher Home'),
+      title: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Teacher Home'),
+          SizedBox(height: 4),
+          Text(
+            '@$name',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w300,
+              color: Color.fromARGB(143, 69, 52, 146),
+            ),
+          ),
+        ],
+      ),
+
       actions: [
         IconButton(
           icon: const Icon(Icons.logout),

@@ -31,22 +31,37 @@ class _StudentHomeState extends State<StudentHome> {
   }
 
   // Student Department showing
+  String? loadError;
+
   Future<void> loadStudentData() async {
-    DocumentSnapshot snapshot = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(uid)
-        .get();
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .get();
 
-    studentDept = snapshot['dept'];
+      if (!snapshot.exists) {
+        throw Exception('Your user profile was not found in Firestore.');
+      }
 
-    await loadSubjects();
+      studentDept = snapshot['dept'];
 
-    await loadRegistrations();
+      await loadSubjects();
+      await loadRegistrations();
+    } catch (e) {
+      debugPrint('StudentHome loading error: $e');
 
-    if (mounted) {
-      setState(() {
-        isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          loadError = e.toString();
+        });
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
     }
   }
 
@@ -154,6 +169,13 @@ class _StudentHomeState extends State<StudentHome> {
       appBar: _appBar(context),
       body: isLoading
           ? Center(child: CircularProgressIndicator())
+          : loadError != null
+          ? Center(
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Text("Could not load your data:\n$loadError"),
+              ),
+            )
           : ListView(
               children: [
                 for (var subject in subjects)

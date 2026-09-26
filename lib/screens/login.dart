@@ -82,9 +82,23 @@ class _LoginState extends State<Login> {
         );
       }
     } on FirebaseAuthException catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(e.message ?? 'Login failed')));
+      debugPrint('Authentication error: ${e.code} - ${e.message}');
+
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.message ?? 'Login failed')));
+      }
+    } on FirebaseException catch (e) {
+      debugPrint('Firebase error: ${e.code} - ${e.message}');
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not load your account: ${e.message}')),
+        );
+      }
+    } catch (e) {
+      debugPrint('Unexpected login error: $e');
     } finally {
       if (mounted) setState(() => isLoading = false);
     }
